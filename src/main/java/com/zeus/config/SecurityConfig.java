@@ -8,12 +8,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import com.zeus.common.security.CustomAccessDeniedHandler;
 import com.zeus.common.security.CustomLoginSuccessHandler;
+import com.zeus.common.security.CustomNoOpPasswordEncoder;
+import com.zeus.common.security.CustomUserDetailsService;
 
 import jakarta.servlet.DispatcherType;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 //@EnableWebSecurity: 스프링에서 지원하는 거 안 쓰고 이제 내가 커스텀만들겠다 선언
 public class SecurityConfig {
 
+	//프로퍼티에 있는 db의 datasource 가져오는 것 
 	@Autowired
 	DataSource dataSource;
 
