@@ -40,7 +40,7 @@ public class CustomLoginSuccessHandler extends SavedRequestAwareAuthenticationSu
 			log.info("CustomLoginSuccessHandler Login Success targetUrl = " + targetUrl);
 			response.sendRedirect(targetUrl);
 		} else {
-			response.sendRedirect("/home");
+			response.sendRedirect("/");
 		}
 
 		//원하는 곳에서 정보를 뺏었으니 굳이 부모 생성자 호출 안 해도 됨

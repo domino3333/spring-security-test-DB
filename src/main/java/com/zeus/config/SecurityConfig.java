@@ -45,7 +45,8 @@ public class SecurityConfig {
 		httpSecurity.csrf(csrf -> csrf.disable());
 
 		// 2. 인가 정책
-		httpSecurity.authorizeHttpRequests(auth -> auth.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+		httpSecurity.authorizeHttpRequests(auth -> auth
+				.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
 				.requestMatchers("/accessError", "/login", "/logout", "/css/**", "/js/**", "/error").permitAll()
 //				.requestMatchers("/board/list").permitAll() // 게시판 목록: 누구나
 //				.requestMatchers("/board/register").hasRole("MEMBER") // 게시판 등록: 회원만
