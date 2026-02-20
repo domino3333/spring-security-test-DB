@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.zeus.common.security.domain.CustomUser;
 import com.zeus.domain.Member;
+import com.zeus.mapper.MemberMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomUserDetailsService implements UserDetailsService{
 
 	@Autowired
-	private MemberMaper memberMapper;
+	private MemberMapper memberMapper;
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

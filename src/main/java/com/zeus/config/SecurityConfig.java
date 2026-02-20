@@ -74,7 +74,7 @@ public class SecurityConfig {
 		return httpSecurity.build();
 	}
 
-	@Autowired
+	//@Autowired
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(createUserDetailsService()).passwordEncoder(createPasswordEncoder());
 

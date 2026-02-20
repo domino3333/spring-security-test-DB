@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 public class HomeController {
 
-	@GetMapping("/")
+	@GetMapping("/home")
 	public String home(Locale locale, Model model) {
 		
 		log.info(locale + "의 방문을 환영합니다.");
