@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import com.zeus.common.security.CustomAccessDeniedHandler;
 import com.zeus.common.security.CustomLoginSuccessHandler;
@@ -25,10 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @EnableWebSecurity
 @Slf4j
+@EnableMethodSecurity(prePostEnabled=true, securedEnabled=true)
 //@EnableWebSecurity: 스프링에서 지원하는 거 안 쓰고 이제 내가 커스텀만들겠다 선언
 public class SecurityConfig {
 
-	//프로퍼티에 있는 db의 datasource 가져오는 것 
+	// 프로퍼티에 있는 db의 datasource 가져오는 것
 	@Autowired
 	DataSource dataSource;
 
@@ -41,14 +45,14 @@ public class SecurityConfig {
 		httpSecurity.csrf(csrf -> csrf.disable());
 
 		// 2. 인가 정책
-		httpSecurity.authorizeHttpRequests(auth -> auth.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
-				.requestMatchers("/accessError", "/login", "/logout", "/css/**", "/js/**", "/error").permitAll()
-				.requestMatchers("/board/list").permitAll() // 게시판 목록: 누구나
-				.requestMatchers("/board/register").hasRole("MEMBER") // 게시판 등록: 회원만
-				.requestMatchers("/notice/list").permitAll() // 공지사항 목록: 누구나
-				.requestMatchers("/notice/register").hasRole("ADMIN") // 공지사항 등록: 관리자만
-				.anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-		);
+//		httpSecurity.authorizeHttpRequests(auth -> auth.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+//				.requestMatchers("/accessError", "/login", "/logout", "/css/**", "/js/**", "/error").permitAll()
+//				.requestMatchers("/board/list").permitAll() // 게시판 목록: 누구나
+//				.requestMatchers("/board/register").hasRole("MEMBER") // 게시판 등록: 회원만
+//				.requestMatchers("/notice/list").permitAll() // 공지사항 목록: 누구나
+//				.requestMatchers("/notice/register").hasRole("ADMIN") // 공지사항 등록: 관리자만
+//				.anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+//		);
 
 		// 3. 접근 거부 시 보여줄 페이지(예외 처리)
 //		httpSecurity.exceptionHandling(exception ->exception.accessDeniedPage("/accessError"));
@@ -71,10 +75,23 @@ public class SecurityConfig {
 				.permitAll() // 로그아웃 요청은 누구나 접근 가능해야 함
 		);
 
+		// 6. 자동 로그인(Remember-Me) 설정 수정
+		httpSecurity
+				.rememberMe(remember -> remember.key("zeus") // 인증 토큰 생성 시 사용할 키 (보안상 중요)
+				.tokenRepository(createJDBCRepository()) // DB를 이용한 토큰 저장소 설정
+				.tokenValiditySeconds(60 * 60 * 24) // 토큰 유효 기간 (초 단위: 여기서는 24시간)
+				.userDetailsService(createUserDetailsService()) // 자동 로그인 시 사용자 정보를 조회할 서비스
+		);
 		return httpSecurity.build();
 	}
 
-	//@Autowired
+	private PersistentTokenRepository createJDBCRepository() {
+		JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
+		repo.setDataSource(dataSource);
+		return repo;
+	}
+
+	// @Autowired
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(createUserDetailsService()).passwordEncoder(createPasswordEncoder());
 
