@@ -6,7 +6,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import lombok.extern.java.Log;
+import com.zeus.common.security.domain.CustomUser;
+import com.zeus.domain.Member;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
