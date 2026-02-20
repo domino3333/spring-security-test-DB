@@ -1,5 +1,7 @@
 package com.zeus.config;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 //@EnableWebSecurity: 스프링에서 지원하는 거 안 쓰고 이제 내가 커스텀만들겠다 선언
 public class SecurityConfig {
 
+	@Autowired
+	DataSource dataSource;
+
 	// 인증과 인가를 필터링할거임
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -32,7 +37,7 @@ public class SecurityConfig {
 
 		// 2. 인가 정책
 		httpSecurity.authorizeHttpRequests(auth -> auth.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
-				.requestMatchers("/accessError", "/login", "/css/", "/js/", "/error").permitAll()
+				.requestMatchers("/accessError", "/login", "/logout", "/css/**", "/js/**", "/error").permitAll()
 				.requestMatchers("/board/list").permitAll() // 게시판 목록: 누구나
 				.requestMatchers("/board/register").hasRole("MEMBER") // 게시판 등록: 회원만
 				.requestMatchers("/notice/list").permitAll() // 공지사항 목록: 누구나
@@ -44,7 +49,7 @@ public class SecurityConfig {
 //		httpSecurity.exceptionHandling(exception ->exception.accessDeniedPage("/accessError"));
 		httpSecurity.exceptionHandling(exception -> exception.accessDeniedHandler(createAccessDeniedHandler()));
 
-		// 4. 기본 로그인 폼은 스프링시큐리티에서 제공하는 것을 쓰겠다
+		// 4. 기본 로그인 폼은 스프링시큐리티에서 제공하는 것을 쓰지 않고(주석된거) 따로 /login에서 주는 jsp를 쓰겠다 선언
 //		httpSecurity.formLogin(Customizer.withDefaults());
 		httpSecurity.formLogin(form -> form.loginPage("/login").loginProcessingUrl("/login") // 로그인 폼 action url, 시큐리티가
 																								// 낚아챔
@@ -66,9 +71,20 @@ public class SecurityConfig {
 
 	@Autowired
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		// 지정된 아이디와 패스워드로 로그인이 가능하도록 설정한다.
-		auth.inMemoryAuthentication().withUser("member").password("{noop}1234").roles("MEMBER");
-		auth.inMemoryAuthentication().withUser("admin").password("{noop}1234").roles("ADMIN", "MEMBER");
+		auth.userDetailsService(createUserDetailsService()).passwordEncoder(createPasswordEncoder());
+
+	}
+
+	// 스프링 시큐리티의 UserDetailsService를 구현한 클래스를 빈으로 등록한다.
+	@Bean
+	public UserDetailsService createUserDetailsService() {
+		return new CustomUserDetailsService();
+	}
+
+	// 사용자가 정의한 비번 암호화 처리기를 빈으로 등록한다.
+	@Bean
+	public PasswordEncoder createPasswordEncoder() {
+		return new CustomNoOpPasswordEncoder();
 	}
 
 	// 3. 접근 거부 시 예외처리를 설정하는 클래스로 이동한다.
